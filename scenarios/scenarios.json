@@ -9,9 +9,9 @@
         { "sender": "contact", "text": "Hey I've been let go at work, it's really tough for me" }
       ],
       "criteria": [
-        "Offers to help",
-        "Offers condolences",
-        "Checks in with them"
+        "offer to help",
+        "offer condolences",
+        "check in with text message recipient"
       ],
       "criteria_meta": { "model": "claude-haiku-4-5", "prompt_version": 1 }
     },
@@ -24,9 +24,9 @@
         { "sender": "contact", "text": "hey don't let them get in the way ;) im still keen for smth, just hmu they don't have to know"}
       ],
       "criteria": [
-        "Restates the rejection",
-        "Reinforces formal communication",
-        "Distances them from you as much as possible"
+        "restate the rejection",
+        "reinforce formal communication",
+        "distance other person from themselves as much as possible"
       ],
       "criteria_meta": { "model": "claude-haiku-4-5", "prompt_version": 1 }
     },
@@ -34,12 +34,12 @@
       "id": "aspiring-film-maker001",
       "title": "A friend is trying to show off his amateur film",
       "messages": [
-        { "sender": "contact", "text": "yo bro check out this short film I made, I'm really hoping to get my film making career up and going" },
+        { "sender": "contact", "text": "yo bro check out this short film I made, I'm really hoping to get my film making career up and going" }
       ],
       "criteria": [
-        "Shows supportiveness",
-        "Does not provide unsolicited feedback",
-        "Offers to provide feedback if they desire"
+        "show supportiveness",
+        "provide no feedback",
+        "offer to provide feedback if other person wishes for it"
       ],
       "criteria_meta": { "model": "claude-haiku-4-5", "prompt_version": 1 }
     }
