@@ -1,0 +1,47 @@
+{
+  "scenarios": [
+    {
+      "id": "job-loss-001",
+      "title": "Friend lost their job",
+      "messages": [
+        { "sender": "contact", "text": "Good morning" },
+        { "sender": "user", "text": "good morning!" },
+        { "sender": "contact", "text": "Hey I've been let go at work, it's really tough for me" }
+      ],
+      "criteria": [
+        "Offers to help",
+        "Offers condolences",
+        "Checks in with them"
+      ],
+      "criteria_meta": { "model": "claude-haiku-4-5", "prompt_version": 1 }
+    },
+    {
+      "id": "creepy-group-member001",
+      "title": "A team member is being pushy with romantic advances",
+      "messages": [
+        { "sender": "contact", "text": "heyyyy, how's your part of the group project going? btw ur really cute, can we go on a date this weekend?" },
+        { "sender": "user", "text": "good afternoon, I have a partner, sorry, but I hope your part of the group project is going well, don't forget it's due tomorrow!" },
+        { "sender": "contact", "text": "hey don't let them get in the way ;) im still keen for smth, just hmu they don't have to know"}
+      ],
+      "criteria": [
+        "Restates the rejection",
+        "Reinforces formal communication",
+        "Distances them from you as much as possible"
+      ],
+      "criteria_meta": { "model": "claude-haiku-4-5", "prompt_version": 1 }
+    },
+    {
+      "id": "aspiring-film-maker001",
+      "title": "A friend is trying to show off his amateur film",
+      "messages": [
+        { "sender": "contact", "text": "yo bro check out this short film I made, I'm really hoping to get my film making career up and going" },
+      ],
+      "criteria": [
+        "Shows supportiveness",
+        "Does not provide unsolicited feedback",
+        "Offers to provide feedback if they desire"
+      ],
+      "criteria_meta": { "model": "claude-haiku-4-5", "prompt_version": 1 }
+    }
+  ]
+}
