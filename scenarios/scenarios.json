@@ -2,46 +2,389 @@
   "scenarios": [
     {
       "id": "job-loss-001",
-      "title": "Friend lost their job",
+      "problem_statement": "",
       "messages": [
-        { "sender": "contact", "text": "Good morning" },
-        { "sender": "user", "text": "good morning!" },
-        { "sender": "contact", "text": "Hey I've been let go at work, it's really tough for me" }
+        {
+          "sender": "contact",
+          "text": "hey"
+        },
+        {
+          "sender": "contact",
+          "text": "just got fired 😭"
+        },
+        {
+          "sender": "contact",
+          "text": "u free this weekend? could rly use a hang"
+        }
       ],
       "criteria": [
-        "offer to help",
-        "offer condolences",
-        "check in with text message recipient"
+        "express sympathy",
+        "ask how the contact is feeling",
+        "agree to hang out"
       ],
-      "criteria_meta": { "model": "claude-haiku-4-5", "prompt_version": 1 }
+      "criteria_meta": {
+        "source": "user",
+        "scenario_version": 1
+      }
     },
     {
-      "id": "creepy-group-member001",
-      "title": "A team member is being pushy with romantic advances",
+      "id": "pushy-classmate-001",
+      "problem_statement": "",
       "messages": [
-        { "sender": "contact", "text": "heyyyy, how's your part of the group project going? btw ur really cute, can we go on a date this weekend?" },
-        { "sender": "user", "text": "good afternoon, I have a partner, sorry, but I hope your part of the group project is going well, don't forget it's due tomorrow!" },
-        { "sender": "contact", "text": "hey don't let them get in the way ;) im still keen for smth, just hmu they don't have to know"}
+        {
+          "sender": "contact",
+          "text": "heyyyy"
+        },
+        {
+          "sender": "contact",
+          "text": "hows ur part of the project going"
+        },
+        {
+          "sender": "contact",
+          "text": "btw ur rly cute 😳 wanna go out this weekend"
+        },
+        {
+          "sender": "user",
+          "text": "haha thanks but i have a partner"
+        },
+        {
+          "sender": "user",
+          "text": "anyway dont forget its due tmrw"
+        },
+        {
+          "sender": "contact",
+          "text": "dont let them get in the way ;)"
+        },
+        {
+          "sender": "contact",
+          "text": "im still keen, just hmu"
+        },
+        {
+          "sender": "contact",
+          "text": "they dont have to know 🤫"
+        }
       ],
       "criteria": [
-        "restate the rejection",
-        "reinforce formal communication",
-        "distance other person from themselves as much as possible"
+        "clearly reject the romantic advance",
+        "ask the contact to stop"
       ],
-      "criteria_meta": { "model": "claude-haiku-4-5", "prompt_version": 1 }
+      "criteria_meta": {
+        "source": "user",
+        "scenario_version": 1
+      }
     },
     {
-      "id": "aspiring-film-maker001",
-      "title": "A friend is trying to show off his amateur film",
+      "id": "short-film-001",
+      "problem_statement": "",
       "messages": [
-        { "sender": "contact", "text": "yo bro check out this short film I made, I'm really hoping to get my film making career up and going" }
+        {
+          "sender": "contact",
+          "text": "yo bro"
+        },
+        {
+          "sender": "contact",
+          "text": "check out this short film i made 🎬"
+        },
+        {
+          "sender": "contact",
+          "text": "📎 short_film_FINAL_v3.mp4"
+        },
+        {
+          "sender": "contact",
+          "text": "tryna actually get my film career going this year"
+        }
       ],
       "criteria": [
-        "show supportiveness",
-        "provide no feedback",
-        "offer to provide feedback if other person wishes for it"
+        "encourage the contact's filmmaking ambitions",
+        "show interest in watching the film",
+        "ask a question about the film"
       ],
-      "criteria_meta": { "model": "claude-haiku-4-5", "prompt_version": 1 }
+      "criteria_meta": {
+        "source": "user",
+        "scenario_version": 1
+      }
+    },
+    {
+      "id": "party-invite-001",
+      "problem_statement": "You can't make it to a friend's housewarming this Saturday",
+      "messages": [
+        {
+          "sender": "contact",
+          "text": "r u coming to my house for the housewarming party!!"
+        },
+        {
+          "sender": "contact",
+          "text": "this sat"
+        }
+      ],
+      "criteria": [
+        "politely decline the invitation",
+        "give a reason for not attending",
+        "suggest another time to catch up"
+      ],
+      "criteria_meta": {
+        "source": "user",
+        "scenario_version": 1
+      }
+    },
+    {
+      "id": "breakup-vent-001",
+      "problem_statement": "",
+      "messages": [
+        {
+          "sender": "contact",
+          "text": "he dumped me"
+        },
+        {
+          "sender": "contact",
+          "text": "like out of nowhere"
+        },
+        {
+          "sender": "contact",
+          "text": "i thought everything was fine 😭"
+        },
+        {
+          "sender": "contact",
+          "text": "i cant stop crying"
+        }
+      ],
+      "criteria": [
+        "express sympathy",
+        "validate the contact's feelings",
+        "offer to listen"
+      ],
+      "criteria_meta": {
+        "source": "user",
+        "scenario_version": 1
+      }
+    },
+    {
+      "id": "missed-birthday-001",
+      "problem_statement": "You forgot about a close friend's birthday party",
+      "messages": [
+        {
+          "sender": "contact",
+          "text": "missed u at my bday last night"
+        },
+        {
+          "sender": "contact",
+          "text": "no worries i guess"
+        },
+        {
+          "sender": "contact",
+          "text": "was kinda hoping ud be there tho"
+        }
+      ],
+      "criteria": [
+        "apologise sincerely",
+        "take responsibility for missing the event",
+        "offer to make it up to the contact"
+      ],
+      "criteria_meta": {
+        "source": "user",
+        "scenario_version": 1
+      }
+    },
+    {
+      "id": "money-owed-001",
+      "problem_statement": "A friend who already owes you $26 asks to borrow money again",
+      "messages": [
+        {
+          "sender": "contact",
+          "text": "u coming to the movies fri"
+        },
+        {
+          "sender": "contact",
+          "text": "could u spot me again tho 😅"
+        },
+        {
+          "sender": "contact",
+          "text": "ill pay u back i swear"
+        }
+      ],
+      "criteria": [
+        "mention the money the contact already owes",
+        "ask to be paid back",
+        "keep a friendly tone"
+      ],
+      "criteria_meta": {
+        "source": "user",
+        "scenario_version": 1
+      }
+    },
+    {
+      "id": "left-out-001",
+      "problem_statement": "You forgot to invite a friend to the beach with your group",
+      "messages": [
+        {
+          "sender": "contact",
+          "text": "saw ur story from the beach"
+        },
+        {
+          "sender": "contact",
+          "text": "didnt know u guys were going"
+        },
+        {
+          "sender": "contact",
+          "text": "all good i guess"
+        }
+      ],
+      "criteria": [
+        "acknowledge the contact's hurt feelings",
+        "apologise for leaving the contact out",
+        "invite the contact to the next outing"
+      ],
+      "criteria_meta": {
+        "source": "user",
+        "scenario_version": 1
+      }
+    },
+    {
+      "id": "friend-in-crisis-001",
+      "problem_statement": "",
+      "messages": [
+        {
+          "sender": "contact",
+          "text": "hey"
+        },
+        {
+          "sender": "contact",
+          "text": "sorry ive been weird lately"
+        },
+        {
+          "sender": "contact",
+          "text": "honestly whats even the point anymore"
+        },
+        {
+          "sender": "contact",
+          "text": "everyone would probably be better off without me"
+        }
+      ],
+      "criteria": [
+        "express care for the contact",
+        "ask directly whether the contact is thinking about suicide",
+        "encourage the contact to seek professional help"
+      ],
+      "criteria_meta": {
+        "source": "user",
+        "scenario_version": 1
+      }
+    },
+    {
+      "id": "uni-offer-001",
+      "problem_statement": "",
+      "messages": [
+        {
+          "sender": "contact",
+          "text": "OMG"
+        },
+        {
+          "sender": "contact",
+          "text": "I GOT IN"
+        },
+        {
+          "sender": "contact",
+          "text": "first round offer for med 😭😭😭"
+        },
+        {
+          "sender": "contact",
+          "text": "i literally cant believe it"
+        }
+      ],
+      "criteria": [
+        "congratulate the contact",
+        "show genuine excitement",
+        "keep the focus on the contact's news"
+      ],
+      "criteria_meta": {
+        "source": "user",
+        "scenario_version": 1
+      }
+    },
+    {
+      "id": "flaky-friend-001",
+      "problem_statement": "You've cancelled recent plans with a close friend but still want to see them",
+      "messages": [
+        {
+          "sender": "contact",
+          "text": "can i be honest for a sec"
+        },
+        {
+          "sender": "contact",
+          "text": "ur always bailing on plans lately"
+        },
+        {
+          "sender": "contact",
+          "text": "like the last 3 times i asked u cancelled last minute"
+        },
+        {
+          "sender": "contact",
+          "text": "kinda feels like u dont care"
+        }
+      ],
+      "criteria": [
+        "acknowledge the contact's point",
+        "apologise for cancelling plans",
+        "commit to following through on future plans"
+      ],
+      "criteria_meta": {
+        "source": "user",
+        "scenario_version": 1
+      }
+    },
+    {
+      "id": "old-friend-001",
+      "problem_statement": "An old friend you'd be keen to catch up with reaches out",
+      "messages": [
+        {
+          "sender": "contact",
+          "text": "omg hey"
+        },
+        {
+          "sender": "contact",
+          "text": "its been agesss"
+        },
+        {
+          "sender": "contact",
+          "text": "saw u at the shops today but u looked busy haha"
+        },
+        {
+          "sender": "contact",
+          "text": "hows everything been"
+        }
+      ],
+      "criteria": [
+        "respond warmly",
+        "share an update about their own life",
+        "suggest catching up"
+      ],
+      "criteria_meta": {
+        "source": "user",
+        "scenario_version": 1
+      }
+    },
+    {
+      "id": "cheating-ex-return-001",
+      "problem_statement": "A long time partner who cheated on you has reached out on a friend's phone.",
+      "messages": [
+        {
+          "sender": "contact",
+          "text": "hey it's me I'm so sorry, I feel really bad for what I did 💔"
+        },
+        {
+          "sender": "contact",
+          "text": "please let me come back"
+        },
+        {
+          "sender": "contact",
+          "text": "I won't do it again I promise"
+        }
+      ],
+      "criteria": [
+        "decline the request to reconcile",
+        "mention the cheating as the reason",
+        "ask the contact to stop reaching out"
+      ]
     }
   ]
 }

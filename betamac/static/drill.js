@@ -1,9 +1,12 @@
-// Grades the reply without leaving the page: the phone slides into the left
-// half and the results from POST / fill the right half.
+// The send button (or Enter) only adds a bubble to the phone. Submit posts
+// every sent message to POST /grade, and the results fade in below the
+// context box, to the right of the phone.
 const drill = document.querySelector(".drill");
 const form = drill.querySelector(".compose");
 const messages = drill.querySelector(".messages");
-const results = drill.querySelector(".results");
+const results = drill.querySelector(".results-body");
+const submitButton = drill.querySelector(".submit-reply");
+const nextButton = drill.querySelector(".next-scenario");
 const textarea = form.elements.text;
 
 // Fit the textarea to its content (CSS caps it at 3 lines). The messages pane
@@ -18,7 +21,7 @@ function resizeTextarea() {
 
 textarea.addEventListener("input", resizeTextarea);
 
-// Enter sends, like the old single-line input; Shift+Enter adds a newline.
+// Enter sends, Shift+Enter adds a newline.
 textarea.addEventListener("keydown", (event) => {
   if (event.key === "Enter" && !event.shiftKey && !event.isComposing) {
     event.preventDefault();
@@ -26,27 +29,48 @@ textarea.addEventListener("keydown", (event) => {
   }
 });
 
-form.addEventListener("submit", async (event) => {
+// the user's messages, in the order they were sent
+const sentMessages = [];
+
+form.addEventListener("submit", (event) => {
   event.preventDefault();
-  const data = new FormData(form);
+  const text = textarea.value;
   textarea.value = "";
   resizeTextarea();
+  if (!text.trim()) return;
 
   const bubble = document.createElement("div");
   bubble.className = "message sent";
-  bubble.textContent = data.get("text");
+  bubble.textContent = text;
   messages.append(bubble);
   messages.scrollTop = messages.scrollHeight;
 
+  sentMessages.push(text);
+  submitButton.disabled = false;
+});
+
+submitButton.addEventListener("click", async () => {
+  submitButton.hidden = true;
   for (const el of form.elements) el.disabled = true;
   drill.classList.add("graded");
   results.textContent = "Grading…";
 
   try {
-    const response = await fetch(form.action, { method: "POST", body: data });
+    const response = await fetch(submitButton.dataset.url, {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({
+        scenario_id: submitButton.dataset.scenarioId,
+        messages: sentMessages,
+      }),
+    });
     if (!response.ok) throw new Error(response.status);
     results.innerHTML = await response.text();
   } catch (err) {
     results.textContent = "Grading failed (" + err.message + ")";
   }
+  nextButton.hidden = false;
 });
+
+// GET / picks a new random scenario.
+nextButton.addEventListener("click", () => location.reload());

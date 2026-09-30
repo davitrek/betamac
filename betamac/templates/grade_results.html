@@ -1,5 +1,5 @@
 <ul class="results-list">
-  {% for criterion, success in results %}
+  {% for criterion, success in results.items() %}
     <li>{{ criterion }} : {{ "✅" if success else "❌" }}</li>
   {% endfor %}
 </ul>

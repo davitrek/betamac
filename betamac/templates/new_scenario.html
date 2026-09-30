@@ -1,0 +1,43 @@
+{% extends "layout.html" %}
+
+{% block title %}
+    Submit Scenario
+{% endblock %}
+
+{% block flashes %}{% endblock %}
+
+{% block main %}
+  <form class="scenario-form" action="{{ url_for('scenarios.submit') }}" method="post">
+    <div class="compose scenario-context">
+      <textarea name="problem_statement" rows="3" autocomplete="off"
+                aria-label="Scenario context"
+                placeholder="Scenario context (optional), e.g. Your friend just lost their job and wants to vent."
+                title="Optional background shown above the chat: who the contact is, or what the user should aim for. Leave blank if the messages speak for themselves."></textarea>
+    </div>
+    <div class="message-rows"></div>
+    <div class="form-actions">
+      <button type="button" class="add-row pill" aria-label="Add message">+</button>
+      <button type="submit" class="pill">Submit</button>
+    </div>
+    <!-- always rendered (empty if nothing was flashed) so new_scenario.js can
+         write errors into it -->
+    <header>
+      <div class="flash form-response" role="alert">{{ get_flashed_messages() | join(" ") }}</div>
+    </header>
+  </form>
+
+  <!-- one message; cloned by new_scenario.js -->
+  <template id="message-row">
+    <div class="message-row">
+      <select name="sender" aria-label="Sender">
+        <option value="contact">contact</option>
+        <option value="user">user</option>
+      </select>
+      <input type="text" name="text" placeholder="Message" aria-label="Message"
+             autocomplete="off" required pattern=".*\S.*" title="Message can't be blank">
+      <button type="button" class="remove-row" aria-label="Remove message">&#x2715;</button>
+    </div>
+  </template>
+  <script>let max_messages = Number("{{ max_messages }}")</script>
+  <script src="{{ url_for('static', filename='new_scenario.js') }}"></script>
+{% endblock %}

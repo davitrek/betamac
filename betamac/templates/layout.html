@@ -1,0 +1,39 @@
+<!DOCTYPE html>
+
+<html lang="en">
+
+  <head>
+    <meta charset="utf-8">
+    <meta name="viewport" content="initial-scale=1, width=device-width">
+
+
+    <link rel="stylesheet" href="{{ url_for('static', filename='style.css') }}">
+
+    <title>{% block title %}{% endblock %}</title>
+
+  </head>
+
+  <body>
+    <nav class="navbar">
+      <a class="brand" href="{{ url_for('drill.drill') }}">betamac</a>
+      <a class="pill" href="{{ url_for('scenarios.create_new') }}">Submit scenario</a>
+    </nav>
+
+    <section>
+      {% block flashes %}
+        {% if get_flashed_messages() %}
+          <header>
+            <div role="alert">
+              {{ get_flashed_messages() | join(" ") }}
+            </div>
+          </header>
+        {% endif %}
+      {% endblock %}
+
+      <main>
+        {% block main %}{% endblock %}
+      </main>
+    </section>
+  </body>
+
+</html>
