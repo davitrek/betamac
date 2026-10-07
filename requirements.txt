@@ -1,4 +1,6 @@
 python-dotenv
 requests
 flask
+flask-limiter
 pytest
+freezegun

@@ -1,7 +1,13 @@
+import datetime
+import json
+import logging
+
 from flask import current_app
 
 from .helpers import scenario_messages_to_str, scenario_problem_statement_to_str
 from .integrations import jev
+
+logger = logging.getLogger(__name__)
 
 
 def testing_sentinel_answers(message, criteria):
@@ -67,7 +73,13 @@ def fetch_jev_grading(
     )
 
 
-# returns list[(criteria, pass/fail)] or None on fail
+def log_grading_error(record: dict, error: str):
+    record["outcome"] = "error"
+    record["error"] = error
+    logger.error(json.dumps(record, ensure_ascii=False))
+
+
+# returns {criterion: pass/fail} or None on fail
 # TODO: review if default state should be an error state (return None) OR a failed all criteria state (return list of False strings)
 def grade_text_message(
     user_response: str, scenario_id: str
@@ -77,6 +89,17 @@ def grade_text_message(
     # NOTE: skips actual grading for testing
     return testing_sentinel_answers("", scenario["criteria"])
 
+    return jev_grade(user_response, scenario)
+
+
+# grades user_response with Jev and logs one JSONL record per call
+def jev_grade(user_response: str, scenario: dict) -> dict[str, bool] | None:
+    record = {
+        "time": datetime.datetime.now(datetime.timezone.utc).isoformat(),
+        "scenario_id": scenario["id"],
+        "user_response": user_response,
+    }
+
     jev_response = fetch_jev_grading(
         user_response,
         scenario["problem_statement"],
@@ -85,17 +108,40 @@ def grade_text_message(
     )
 
     if not jev_response:
+        log_grading_error(record, "Jev API failure")
         return None
+
+    record["jev_response_id"] = jev_response.get("id")
+    if jev_response.get("usage"):
+        record["jev_cost"] = jev_response["usage"].get("cost")
 
     answers = jev_response.get("answers")
 
     if not answers:
+        log_grading_error(record, "Jev provided no answers")
         return None
 
+    threshold = current_app.config["JEV_TRUE_THRESHOLD"]
+
+    # {criterion: {"question", "noul", "threshold", "met"}}
+    record["criteria"] = {}
     criteria_met = {}
     for i, criterion in enumerate(scenario["criteria"]):
-        criteria_met[criterion] = (
-            answers[f"q{i}"]["noul"] > current_app.config["JEV_TRUE_THRESHOLD"]
-        )
+        answer = answers.get(f"q{i}")
+        if not answer or "noul" not in answer:
+            log_grading_error(record, f'Missing noul for question "q{i}"')
+            return None
+
+        met = answer["noul"] > threshold
+        record["criteria"][criterion] = {
+            "question": f"q{i}",
+            "noul": answer["noul"],
+            "threshold": threshold,
+            "met": met,
+        }
+        criteria_met[criterion] = met
+
+    record["outcome"] = "graded"
+    logger.info(json.dumps(record, ensure_ascii=False))
 
     return criteria_met

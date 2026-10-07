@@ -32,6 +32,37 @@ textarea.addEventListener("keydown", (event) => {
 // the user's messages, in the order they were sent
 const sentMessages = [];
 
+// The server allows one grading per 5 seconds, so Submit stays disabled for
+// that long after the last one. The time is kept in localStorage because
+// Next scenario reloads the page.
+const COOLDOWN_MS = 5000;
+const WAIT_TOOLTIP = "Please wait before submitting again";
+let coolingDown = false;
+let cooldownTimer;
+
+function readLastGraded() {
+  try {
+    return Number(localStorage.getItem("lastGradedAt")) || 0;
+  } catch {
+    return 0;
+  }
+}
+
+function startCooldown(ms) {
+  coolingDown = true;
+  submitButton.disabled = true;
+  submitButton.title = WAIT_TOOLTIP;
+  clearTimeout(cooldownTimer);
+  cooldownTimer = setTimeout(() => {
+    coolingDown = false;
+    submitButton.title = "";
+    submitButton.disabled = sentMessages.length === 0;
+  }, ms);
+}
+
+const sinceLastGraded = Date.now() - readLastGraded();
+if (sinceLastGraded < COOLDOWN_MS) startCooldown(COOLDOWN_MS - sinceLastGraded);
+
 form.addEventListener("submit", (event) => {
   event.preventDefault();
   const text = textarea.value;
@@ -46,7 +77,7 @@ form.addEventListener("submit", (event) => {
   messages.scrollTop = messages.scrollHeight;
 
   sentMessages.push(text);
-  submitButton.disabled = false;
+  if (!coolingDown) submitButton.disabled = false;
 });
 
 submitButton.addEventListener("click", async () => {
@@ -64,8 +95,19 @@ submitButton.addEventListener("click", async () => {
         messages: sentMessages,
       }),
     });
+    if (response.status === 429) {
+      // rate limited: show the server's message and let them retry
+      results.textContent = await response.text();
+      submitButton.hidden = false;
+      for (const el of form.elements) el.disabled = false;
+      startCooldown(COOLDOWN_MS);
+      return;
+    }
     if (!response.ok) throw new Error(response.status);
     results.innerHTML = await response.text();
+    try {
+      localStorage.setItem("lastGradedAt", String(Date.now()));
+    } catch {}
   } catch (err) {
     results.textContent = "Grading failed (" + err.message + ")";
   }

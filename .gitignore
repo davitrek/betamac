@@ -3,3 +3,5 @@
 __pycache__
 .vscode
 .pytest_cache
+/scripts/review_eval_runs
+logs

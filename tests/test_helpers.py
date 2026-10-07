@@ -1,6 +1,10 @@
 import pytest
 
-from betamac.helpers import scenario_messages_to_str, scenario_to_str
+from betamac.helpers import (
+    scenario_messages_to_str,
+    scenario_to_str,
+    message_list_form_to_dict_form,
+)
 
 
 @pytest.mark.parametrize(
@@ -96,4 +100,28 @@ def test_scenario_to_str(scenario, expected_output):
     output = scenario_to_str(
         scenario["problem_statement"], scenario["messages"]
     )
+    assert output == expected_output
+
+
+@pytest.mark.parametrize(
+    "messages, expected_output",
+    [
+        pytest.param(
+            [["user", "hello"]],
+            [{"sender": "user", "text": "hello"}],
+            id="single_message",
+        ),
+        pytest.param(
+            [["user", "hello"], ["contact", "hey"], ["user", "what's up"]],
+            [
+                {"sender": "user", "text": "hello"},
+                {"sender": "contact", "text": "hey"},
+                {"sender": "user", "text": "what's up"},
+            ],
+            id="multiple_messages",
+        ),
+    ],
+)
+def test_message_list_form_to_dict_form(messages, expected_output):
+    output = message_list_form_to_dict_form(messages)
     assert output == expected_output

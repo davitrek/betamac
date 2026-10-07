@@ -1,7 +1,11 @@
+import datetime
+import json
+import logging
+import re
+from collections.abc import Collection
 from pathlib import Path
 
 from flask import current_app
-import re
 
 from betamac.helpers import (
     scenario_criteria_to_dotpoint_str,
@@ -10,56 +14,128 @@ from betamac.helpers import (
 )
 from betamac.integrations import analysis_model, jev
 
-
-def build_jev_state(messages: list[list[str, str]]) -> str:
-    s = "A text message exchange between two people, 'user' and 'contact' includes the following messages: "
-    for m in messages:
-        s += f"{m[0]}: {m[1]}\n"
-
-    return s
+logger = logging.getLogger(__name__)
 
 
-def build_jev_questions() -> dict:
+def build_jev_state(
+    problem_statement: str | None, messages: list[dict[str, str]]
+) -> dict:
+    d = {
+        **current_app.config["SCENARIO_REVIEW"]["state"],
+        "messages": messages,
+    }
+    if problem_statement:
+        d["context"] = problem_statement
+
+    return d
+
+
+def build_jev_questions(to_ask_about_problem_statement: bool = True) -> dict:
     # build questions
     questions = {}
-    questions["leading_somewhere"] = {
-        "type": "noul",
-        "instructions": "The messages in this conversation have a purpose and are leading somewhere",
-        "criteria": {
-            "true": "Message forms a conversation with a purpose",
-            "false": "Messages do not have purpose or do not form a conversation",
-        },
-    }
-    questions["is_users_turn"] = {
-        "type": "noul",
-        "instructions": "It is user's turn to send a message next",
-        "criteria": {
-            "true": "I expect user to send a message next",
-            "false": "I expect contact to send a message next or the conversation has ended",
-        },
-    }
+    for k, v in current_app.config["SCENARIO_REVIEW"]["questions"].items():
+        if (
+            k != "problem_statement_and_messages_agree"
+            or to_ask_about_problem_statement
+        ):
+            questions[k] = v["question"]
 
     return questions
 
 
-def jev_review(messages: list[list[str, str]]):
+def is_question_rejected(noul: float, question_details: dict) -> bool:
+    # assume scenario_review.json is correctly formed
+    if question_details["reject_if"] == "above":
+        return noul > question_details["threshold"]
+    return noul < question_details["threshold"]
+
+
+def jev_response_breakdown(
+    answers: dict, asked_questions: Collection[str] | None = None
+) -> dict[str, dict]:
+    # asked_questions: names of the questions sent to Jev (default: all of
+    # them). Questions that weren't asked are skipped rather than missing.
+
+    # {"question_name": {"noul", "threshold", "reject_if", "rejected"}}
+    question_breakdown = {}
+    for question, question_details in current_app.config["SCENARIO_REVIEW"][
+        "questions"
+    ].items():
+        if asked_questions is not None and question not in asked_questions:
+            continue
+        try:
+            answer = answers[question]
+        except KeyError as e:
+            raise ValueError(
+                "Jev did not provide answer to one or more questions!"
+            ) from e
+
+        try:
+            answer_noul = answer["noul"]
+        except KeyError as e:
+            raise ValueError(f'Missing noul for question "{question}"') from e
+
+        question_breakdown[question] = {
+            "noul": answer_noul,
+            "threshold": question_details["threshold"],
+            "reject_if": question_details["reject_if"],
+            "rejected": is_question_rejected(answer_noul, question_details),
+        }
+
+    return question_breakdown
+
+
+# returns whether scenario meets criteria per Jev review or throw if Jev
+# response failed
+def jev_review(
+    problem_statement: str | None, messages: list[dict[str, str]]
+) -> bool:
+    record = {
+        "problem_statement": problem_statement,
+        "messages": messages,
+        "time": datetime.datetime.now(datetime.timezone.utc).isoformat(),
+    }
+
+    # only ask whether the context agrees with the messages if there is one
+    questions = build_jev_questions(bool(problem_statement))
     jev_response = jev.fetch_answers(
-        build_jev_state(messages), build_jev_questions()
+        build_jev_state(problem_statement, messages), questions
     )
     if not jev_response:
-        return None
+        record["outcome"] = "error"
+        record["error"] = "Jev API failure"
+        logger.error(json.dumps(record, ensure_ascii=False))
+        raise ValueError("Jev API failure")
 
-    answers = jev_response["answers"]
-    if not answers:
-        return None
+    record["jev_response_id"] = jev_response.get("id")
+    if jev_response.get("usage"):
+        record["jev_cost"] = jev_response["usage"].get("cost")
 
-    if (
-        answers["leading_somewhere"]["noul"]
-        > current_app.config["JEV_TRUE_THRESHOLD"]
-        and answers["is_users_turn"]["noul"]
-        > current_app.config["JEV_TRUE_THRESHOLD"]
-    ):
-        return True
+    try:
+        answers = jev_response["answers"]
+    except KeyError as e:
+        record["outcome"] = "error"
+        record["error"] = "Jev provided no answers"
+        logger.error(json.dumps(record, ensure_ascii=False))
+        raise ValueError("Jev provided no answers") from e
+
+    try:
+        record["review_questions"] = jev_response_breakdown(answers, questions)
+    except ValueError as e:
+        record["outcome"] = "error"
+        record["error"] = str(e)
+        logger.error(json.dumps(record, ensure_ascii=False))
+        raise
+
+    # if any question is rejected, scenario doesn't pass
+    if any(q["rejected"] for q in record["review_questions"].values()):
+        record["outcome"] = "rejected"
+        logger.info(json.dumps(record, ensure_ascii=False))
+        return False
+
+    record["outcome"] = "accepted"
+    logger.info(json.dumps(record, ensure_ascii=False))
+    return True
 
 
 def create_prompt(
@@ -93,6 +169,7 @@ def create_prompt(
     return "\n".join(lines)
 
 
+# use Deepseek to formulate new scenario
 def create_new_scenario(
     scenario_problem_statement: str, scenario_messages: list[dict]
 ) -> dict:
@@ -110,6 +187,9 @@ def create_new_scenario(
         )
     )
 
+    if response is None:
+        raise ValueError("Scene creator model request failed")
+
     print(response["choices"][0]["message"]["content"])
     # print(response["usage"]["cost"])
 
@@ -125,7 +205,7 @@ def create_new_scenario(
 
     # check response follows provided format
     if not model_message[0][:3] == "id:":
-        raise ValueError("Response does not follow expected format")
+        raise ValueError("Model response does not follow expected format")
 
     idx = 3
     # skip space if there is one (there is supposed to be)
@@ -146,11 +226,11 @@ def create_new_scenario(
         # don't expect to realistically happen
         assert 0
 
-    new_scenario = {"id": scenario_id}
-    new_scenario["problem_statement"] = scenario_problem_statement
-    new_scenario["messages"] = scenario_messages
-    new_scenario["criteria"] = [
-        re.search(r"- (.*)", c)[1] for c in model_message[1:]
-    ]
+    new_scenario = {
+        "id": scenario_id,
+        "problem_statement": scenario_problem_statement,
+        "messages": scenario_messages,
+        "criteria": [re.search(r"- (.*)", c)[1] for c in model_message[1:]],
+    }
 
     return new_scenario

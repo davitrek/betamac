@@ -56,7 +56,8 @@ form.addEventListener("submit", async (event) => {
   });
   if (response.ok) {
     location.reload();
-  } else if (response.status == 400){
+  } else if (response.status == 400 || response.status == 429) {
+    // bad input, or rate limited (the server says how long to wait)
     formResponse.textContent = await response.text();
   } else {
     formResponse.textContent = "form failed to be submitted";

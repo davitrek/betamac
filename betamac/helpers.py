@@ -47,3 +47,14 @@ def scenario_to_str(
         scenario_messages_to_str(scenario_messages),
     ]
     return "\n".join(lines)
+
+
+def message_list_form_to_dict_form(
+    messages: list[list[str]],
+) -> list[dict[str, str]]:
+    try:
+        return [{"sender": s, "text": t} for s, t in messages]
+    except ValueError as e:
+        raise ValueError(
+            'Messages not in expected form ([["sender/contact", "<message text>"]])'
+        ) from e

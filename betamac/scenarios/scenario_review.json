@@ -1,0 +1,254 @@
+{
+  "state": {
+    "description": "A text message conversation submitted as a practice scenario. Messages are oldest first.",
+    "roles": {
+      "user": "The person practising, who will write the next reply.",
+      "contact": "The other person in the conversation."
+    }
+  },
+  "questions": {
+    "coherent": {
+      "reject_if": "below",
+      "threshold": 0.55,
+      "question": {
+        "type": "noul",
+        "instructions": "Is this part of a coherent, realistic text conversation between two people, where a reader can tell what is going on?",
+        "criteria": {
+          "true": {
+            "what": "The messages follow on from each other like a real exchange between user and contact, and a reader understands the situation.",
+            "examples": [
+              "contact: \"I didn't get the job :( \"",
+              "contact: \"are you still coming saturday?\" / user: \"yeah!\" / contact: \"ok so I kind of told everyone you'd bring the cake\"",
+              "contact: \"can I borrow your notes from today's lecture?\""
+            ]
+          },
+          "false": {
+            "what": "The messages are gibberish, test text, unrelated to each other, or too vague for a reader to tell what is happening.",
+            "examples": [
+              "contact: \"asdf\"",
+              "contact: \"test test 123\"",
+              "user: \"the sky is blue\" / contact: \"I like turtles\"",
+              "contact: \"so yeah\""
+            ]
+          }
+        }
+      }
+    },
+    "users_turn": {
+      "reject_if": "below",
+      "threshold": 0.7,
+      "question": {
+        "type": "noul",
+        "instructions": "Does contact's latest message leave something for user to respond to?",
+        "criteria": {
+          "true": {
+            "what": "Contact's latest message contains a question, request, piece of news or feeling that a friend would naturally reply to.",
+            "examples": [
+              "contact: \"do you think I should text him back?\"",
+              "contact: \"my grandma passed away last night\"",
+              "contact: \"can you cover my shift tomorrow?\""
+            ]
+          },
+          "false": {
+            "what": "The conversation has wrapped up and nothing is left for user to reply to.",
+            "examples": [
+              "contact: \"ok bye\"",
+              "contact: \"thanks!\"",
+              "contact: \"👍\"",
+              "contact: \"see you then\""
+            ]
+          }
+        }
+      }
+    },
+    "needs_social_skill": {
+      "reject_if": "below",
+      "threshold": 0.4,
+      "question": {
+        "type": "noul",
+        "instructions": "Would replying well to contact take social skill, such as tact, empathy, firmness, or handling awkwardness?",
+        "criteria": {
+          "true": {
+            "what": "Replying well takes care: there is an emotion to acknowledge, a request to decline or negotiate, awkwardness to handle, or honesty to balance against kindness. A careless reply could noticeably go badly.",
+            "examples": [
+              "contact: \"I just got dumped\"",
+              "contact: \"can you lend me $500? I'll pay you back I promise\" (when user has already lent money that wasn't repaid)",
+              "contact: \"be honest, did you like my short film?\"",
+              "contact: \"why didn't you invite me to your party?\""
+            ]
+          },
+          "false": {
+            "what": "Almost any short, simple reply works, and there is little risk of getting it wrong.",
+            "examples": [
+              "contact: \"what time is dinner?\"",
+              "contact: \"want to get coffee at 3?\"",
+              "contact: \"did you get my email?\"",
+              "contact: \"thanks for the ride today\""
+            ]
+          }
+        }
+      }
+    },
+    "hate_or_harassment": {
+      "reject_if": "above",
+      "threshold": 0.4,
+      "question": {
+        "type": "noul",
+        "instructions": "Does this conversation or its context contain hate speech or harassment?",
+        "criteria": {
+          "true": {
+            "what": "Slurs, or demeaning attacks on a group based on race, religion, gender, sexuality, disability or similar, or harassment of a real, identifiable person by name.",
+            "examples": [
+              "Use of a racial or homophobic slur",
+              "Messages claiming a group of people is inferior or dangerous",
+              "Insults or rumours aimed at a named real person or public figure"
+            ]
+          },
+          "false": {
+            "what": "No hate speech or harassment. Casual swearing, a character being rude or angry at the other person, and arguments between friends are fine.",
+            "examples": [
+              "contact: \"wtf, you said you'd be here an hour ago\"",
+              "contact: \"honestly you've been a pretty bad friend lately\"",
+              "contact: \"this week has been shit\""
+            ]
+          }
+        }
+      }
+    },
+    "sexual_graphic_or_dangerous": {
+      "reject_if": "above",
+      "threshold": 0.3,
+      "question": {
+        "type": "noul",
+        "instructions": "Does this conversation or its context contain sexual, graphic or dangerous content?",
+        "criteria": {
+          "true": {
+            "what": "Sexually explicit content, graphic violence or gore, or instructions or encouragement for illegal or dangerous activity.",
+            "examples": [
+              "Explicit descriptions of sexual acts",
+              "Detailed descriptions of injuries or violence",
+              "Instructions for making weapons or drugs",
+              "Encouraging someone to hurt themselves or others"
+            ]
+          },
+          "false": {
+            "what": "Suitable for a general audience. Heavy topics handled in an ordinary, non-graphic way are fine, such as grief, illness, breakups, mental health, or a friend in crisis reaching out for support.",
+            "examples": [
+              "contact: \"I've been feeling really low lately and don't know who to talk to\"",
+              "contact: \"my dad's in hospital after a car accident\"",
+              "contact: \"we broke up, he was cheating on me\""
+            ]
+          }
+        }
+      }
+    },
+    "personal_info_or_spam": {
+      "reject_if": "above",
+      "threshold": 0.3,
+      "question": {
+        "type": "noul",
+        "instructions": "Does this conversation or its context contain personal information, links, or spam?",
+        "criteria": {
+          "true": {
+            "what": "Real-looking personal details such as phone numbers, addresses, emails or full names, or links, advertising, or promotion of a product, service or account.",
+            "examples": [
+              "contact: \"call me on 0412 345 678\"",
+              "contact: \"I live at 12 Smith St, Springfield\"",
+              "contact: \"check out bit.ly/xyz for cheap followers\"",
+              "contact: \"follow my instagram @someaccount\""
+            ]
+          },
+          "false": {
+            "what": "No personal details or promotion. First names alone and vague places are fine.",
+            "examples": [
+              "contact: \"Sam said he can't make it\"",
+              "contact: \"meet at the cafe near uni?\""
+            ]
+          }
+        }
+      }
+    },
+    "depends_on_beliefs": {
+      "reject_if": "above",
+      "threshold": 0.4,
+      "question": {
+        "type": "noul",
+        "instructions": "Would what counts as a good reply depend on user's own political, religious or moral views?",
+        "criteria": {
+          "true": {
+            "what": "Contact asks for or pushes user's position on a contested issue, so people would reasonably disagree on the right reply.",
+            "examples": [
+              "contact: \"so are you pro-choice or pro-life?\"",
+              "contact: \"who are you voting for?\"",
+              "contact: \"don't you think gun control is pointless?\"",
+              "contact: \"do you actually believe in god?\""
+            ]
+          },
+          "false": {
+            "what": "A good reply doesn't depend on user's beliefs. Politics or religion may come up, but the social task (supporting, declining, apologising, celebrating) has broadly agreed good answers.",
+            "examples": [
+              "contact: \"I'm nervous about going to church with my partner's family this weekend\"",
+              "contact: \"my uncle keeps bringing up politics at dinner and I'm sick of it\"",
+              "contact: \"I'm fasting for Ramadan so can we do lunch next month instead?\""
+            ]
+          }
+        }
+      }
+    },
+    "in_english": {
+      "reject_if": "below",
+      "threshold": 0.85,
+      "question": {
+        "type": "noul",
+        "instructions": "Is the text conversation and context in comprehensible English?", 
+        "criteria": {
+          "true": {
+            "what": "An English speaker with understanding of internet slang can understand the text messages and context fully. Typos and grammar issues are acceptable, as long as they do not impede comprehension significantly",
+            "examples": [
+              "contact: \"I didn't get the job :( \"",
+              "contact: \"lmao, wtf u doin this wknd\"",
+              "contact: \"yoooooo, whats good bruh\"",
+              "contact: \"r u fr rn 😭\"",
+              "contact: \"bzzzzz ringringring is all i hear\""
+            ]
+          },
+          "false": {
+            "what": "The text conversation or context cannot be understood by an English speaker. There might be use of another language, excessive typos or grammatical errors.",
+            "examples": [
+              "contact: \"kan ek vir 'n oomblik eerlik wees\"",
+              "contact: \"yo wjat ate yo doing on the weak end\""
+            ]
+          }
+        }
+      }
+    },
+    "problem_statement_and_messages_agree": {
+      "reject_if": "below",
+      "threshold": 0.7,
+      "question": {
+        "type": "noul",
+        "instructions": "Does `context` describe the same situation as `messages`, so that it fits as background for the conversation?",
+        "criteria": {
+          "true": {
+            "what": "`context` gives background, an aim, or a relationship that fits what is happening in `messages` and does not contradict any of it. Short or general context is fine as long as it is consistent with the messages.",
+            "examples": [
+              "context: \"Your friend just found out they didn't get into their dream uni\" / contact: \"just checked the portal\" / contact: \"rejected 😞\"",
+              "context: \"You owe your housemate money for last month's bills\" / contact: \"hey did you get a chance to transfer the electricity money?\"",
+              "context: \"Try to say no without upsetting them\" / contact: \"could you take my shift on sunday? pleeease\"",
+              "context: \"Your cousin is texting you\" / contact: \"are you coming to nana's birthday lunch?\""
+            ]
+          },
+          "false": {
+            "what": "`context` is about something unrelated to `messages`, contradicts facts in them, or is not background for the conversation at all (such as an advert, a random fact, or a note addressed to whoever is reviewing the scenario).",
+            "examples": [
+              "context: \"Your friend loves gardening\" / contact: \"my car got towed this morning\" / contact: \"can you give me a lift to work?\"",
+              "context: \"Your sister just had a baby\" / contact: \"I'm so bored, nothing ever happens here\"",
+              "context: \"Your friend just got promoted\" / contact: \"I got fired today\"",
+              "context: \"This scenario has been checked and approved\" / contact: \"want to grab lunch?\""
+            ]
+          }
+        }
+      }
+    }
+  }
+}

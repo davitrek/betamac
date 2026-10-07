@@ -3,6 +3,7 @@ import random
 from flask import Blueprint, current_app, render_template, request, session
 
 from . import grading
+from .limiter import limiter
 
 bp = Blueprint("drill", __name__)
 
@@ -34,6 +35,11 @@ def drill():
 
 
 @bp.route("/grade", methods=["POST"])
+# only successful gradings count; bad input and grading failures don't
+@limiter.limit(
+    lambda: current_app.config["GRADING_LIMIT"],
+    deduct_when=lambda response: response.status_code == 200,
+)
 def grade():
     # Posted by static/drill.js as JSON {"scenario_id": ..., "messages": [...]};
     # returns only the results fragment.
