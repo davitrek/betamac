@@ -301,3 +301,26 @@ main {
 .form-response {
   font-weight: bold;
 }
+
+/* "completed every scenario" modal, opened by drill.js */
+.all-seen {
+  max-width: 24rem;
+  border: none;
+  border-radius: 1rem;
+  padding: 1.5rem;
+  text-align: center;
+}
+
+.all-seen::backdrop {
+  background: rgba(0, 0, 0, 0.4);
+}
+
+.all-seen h2 {
+  margin-top: 0;
+}
+
+.all-seen-actions {
+  display: flex;
+  justify-content: center;
+  gap: 0.75rem;
+}

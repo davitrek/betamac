@@ -79,15 +79,14 @@ def log_grading_error(record: dict, error: str):
     logger.error(json.dumps(record, ensure_ascii=False))
 
 
-# returns {criterion: pass/fail} or None on fail
-# TODO: review if default state should be an error state (return None) OR a failed all criteria state (return list of False strings)
+# returns {"criterion": True/False, i.e., pass/fail} or None on error
 def grade_text_message(
     user_response: str, scenario_id: str
 ) -> dict[str, bool] | None:
 
     scenario = current_app.config["SCENARIOS"][scenario_id]
     # NOTE: skips actual grading for testing
-    return testing_sentinel_answers("", scenario["criteria"])
+    # return testing_sentinel_answers("", scenario["criteria"])
 
     return jev_grade(user_response, scenario)
 

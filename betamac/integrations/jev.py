@@ -3,6 +3,7 @@ import json
 import requests
 from flask import current_app
 
+from ..config import Config
 from .request_manager import RequestWaitTooLongError, jev_request_manager
 
 
@@ -29,7 +30,7 @@ def fetch_answers(
                     "questions": questions,
                 }
             ),
-            timeout=current_app.config["REQUEST_TIMEOUT_S"],
+            timeout=Config.REQUEST_TIMEOUT_S,
         )
 
         try:

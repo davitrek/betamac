@@ -33,5 +33,15 @@
       <button type="button" class="submit-reply pill" data-url="{{ url_for('drill.grade') }}" data-scenario-id="{{ scenario_id }}" disabled>Submit</button>
     </div>
   </div>
+  {% if to_notify_all_scenarios_seen %}
+    <dialog class="all-seen">
+      <h2>You've completed every scenario!</h2>
+      <p>Consider submitting a scenario. You can also keep practising with the existing ones or wait until new ones are added.</p>
+      <form method="dialog" class="all-seen-actions">
+        <a class="pill" href="{{ url_for('scenarios.create_new') }}">Submit a scenario</a>
+        <button class="pill" autofocus>Keep practising</button>
+      </form>
+    </dialog>
+  {% endif %}
   <script src="{{ url_for('static', filename='drill.js') }}"></script>
 {% endblock %}

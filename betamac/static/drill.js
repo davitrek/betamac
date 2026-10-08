@@ -116,3 +116,6 @@ submitButton.addEventListener("click", async () => {
 
 // GET / picks a new random scenario.
 nextButton.addEventListener("click", () => location.reload());
+
+// Only rendered once the user has completed every scenario.
+document.querySelector("dialog.all-seen")?.showModal();

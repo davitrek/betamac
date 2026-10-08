@@ -18,19 +18,28 @@ def drill():
         if sid not in seen_scenarios
     ]
 
-    # if all scenarios seen (no new scenarios), clear seen scenarios so user can
-    # start again
+    to_notify_all_scenarios_seen = False
+    # if all scenarios alr seen, notify user and choose random scenario to show
     if not new_scenarios:
-        session["seen_scenarios"] = []
-        new_scenarios = list(current_app.config["SCENARIOS"].values())
-
-    chosen_scenario = random.choice(new_scenarios)
+        chosen_scenario = random.choice(
+            list(current_app.config["SCENARIOS"].values())
+        )
+        # do not show message if it's alr been seen
+        if not session.get("all_seen_notified", False):
+            to_notify_all_scenarios_seen = True
+            session["all_seen_notified"] = True
+    else:
+        chosen_scenario = random.choice(new_scenarios)
+        # re-enable notification once all new scenarios are seen
+        # -> will happen if user comes back after new scenarios are added
+        session["all_seen_notified"] = False
 
     return render_template(
         "drill.html",
         messages=chosen_scenario["messages"],
         scenario_id=chosen_scenario["id"],
         problem_statement=chosen_scenario["problem_statement"],
+        to_notify_all_scenarios_seen=to_notify_all_scenarios_seen,
     )
 
 
@@ -63,16 +72,17 @@ def grade():
     # grading takes one string: one message per line
     submitted_message = "\n".join(messages)
 
+    # {"criterion": True/False, i.e., pass/fail} or None on error
     criteria_met = grading.grade_text_message(submitted_message, scenario_id)
-
     if criteria_met is None:
         return "Grading failed", 500
 
-    # if user submits *valid* result, add it to cookies so they don't see it again
-    session["seen_scenarios"] = [
-        *session.get("seen_scenarios", []),
-        scenario_id,
-    ]
-    session.permanent = True
+    # if user submits correct solution, add it to cookies so they don't see it again
+    if all(criteria_met.values()):
+        session["seen_scenarios"] = [
+            *session.get("seen_scenarios", []),
+            scenario_id,
+        ]
+        session.permanent = True
 
     return render_template("grade_results.html", results=criteria_met)
