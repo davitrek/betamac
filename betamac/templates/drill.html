@@ -22,12 +22,15 @@
     <div class="side">
       {% if problem_statement %}
         <div class="context">
-          <h2 class="context-heading">Context</h2>
+          <h2 class="side-heading">Context</h2>
           <div class="message received context-body">{{ problem_statement }}</div>
         </div>
       {% endif %}
       <div class="results">
-        <div class="results-body"></div>
+        <div class="grading">
+          <h2 class="side-heading">Grading</h2>
+          <div class="results-body"></div>
+        </div>
         <button type="button" class="next-scenario pill" hidden>Next scenario</button>
       </div>
       <button type="button" class="submit-reply pill" data-url="{{ url_for('drill.grade') }}" data-scenario-id="{{ scenario_id }}" disabled>Submit</button>

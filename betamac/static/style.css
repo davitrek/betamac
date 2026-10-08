@@ -118,7 +118,8 @@ main {
   gap: 0.25rem;
 }
 
-.context-heading {
+/* the small grey "Context" / "Grading" labels */
+.side-heading {
   margin: 0;
   font-size: 0.75rem;
   font-weight: normal;
@@ -155,18 +156,35 @@ main {
   pointer-events: auto;
 }
 
+/* the "Grading" heading over the results, spaced like .context */
+.grading {
+  flex: 1;
+  min-height: 0;
+  align-self: stretch;
+  display: flex;
+  flex-direction: column;
+  gap: 0.25rem;
+}
+
 .results-body {
   flex: 1;
   min-height: 0;
   overflow-y: auto;
 }
 
+/* one sent-style bubble per criterion, stacked like .messages */
 .results-list {
   list-style: none;
   padding: 0;
   margin: 0;
-  text-align: left;
-  line-height: 2;
+  display: flex;
+  flex-direction: column;
+  gap: 0.5rem;
+}
+
+/* unlike chat bubbles, may use the column's full width */
+.results-list .message {
+  max-width: none;
 }
 
 /* pill-shaped button, used for both <button> and <a> */
