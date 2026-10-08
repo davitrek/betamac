@@ -342,3 +342,130 @@ main {
   justify-content: center;
   gap: 0.75rem;
 }
+
+@keyframes fade-in {
+  from { opacity: 0; }
+  to { opacity: 1; }
+}
+
+/* phones (portrait, or landscape via the height check): the screen itself is
+   the phone. The drill page fills exactly one screen with the context above
+   the chat, and after grading the results replace the compose box */
+@media (max-width: 700px), (max-height: 500px) {
+  .navbar {
+    padding: 0.5rem 1rem;
+  }
+
+  /* only the drill page is locked to one screen; dvh follows the address bar
+     (and, on Android, the keyboard; see the viewport meta in layout.html) */
+  body:has(.drill) {
+    height: 100vh;
+    height: 100dvh;
+    display: flex;
+    flex-direction: column;
+  }
+
+  body:has(.drill) > section {
+    flex: 1;
+    min-height: 0;
+    display: flex;
+    flex-direction: column;
+  }
+
+  body:has(.drill) main {
+    flex: 1;
+    min-height: 0;
+    padding: 0;
+  }
+
+  /* .side's box is dropped so its children can be ordered around the phone */
+  .drill {
+    flex-direction: column;
+    height: 100%;
+    gap: 0;
+  }
+
+  .side {
+    display: contents;
+  }
+
+  /* padding rather than margin so the line runs edge to edge, like the one
+     above .results */
+  .context {
+    order: -1;
+    max-height: 20dvh;
+    padding: 0.5rem 1rem 1.5rem;
+    border-bottom: 1px solid #ddd;
+  }
+
+  .phone {
+    flex: 1;
+    min-height: 0;
+    height: auto;
+    width: 100%;
+    aspect-ratio: auto;
+    border: none;
+    border-radius: 0;
+    padding: 1.5rem 1rem 0.5rem;
+  }
+
+  .results,
+  .submit-reply {
+    order: 1;
+  }
+
+  /* hidden outright until graded, since opacity 0 would still take space */
+  .drill:not(.graded) .results {
+    display: none;
+  }
+
+  .drill.graded .compose {
+    display: none;
+  }
+
+  /* Submit only reappears after a 429, so bring the compose box back too */
+  .drill.graded:has(.submit-reply:not([hidden])) .compose {
+    display: flex;
+  }
+
+  .results {
+    flex: 0 1 auto;
+    max-height: 50%;
+    gap: 0.75rem;
+    padding: 0.5rem 1rem 1rem;
+    border-top: 1px solid #ddd;
+    animation: fade-in 0.6s ease;
+  }
+
+  .submit-reply {
+    margin: 0.5rem auto 1rem;
+  }
+
+  .compose button,
+  .remove-row {
+    width: 2.5rem;
+    height: 2.5rem;
+  }
+
+  /* keeps one line as tall as the bigger send button */
+  .compose textarea {
+    padding: 0.625rem 0;
+    max-height: calc(3 * 1.25rem + 1.25rem);
+  }
+
+  /* submit-scenario page: rows span the screen and the input takes the slack */
+  .scenario-form {
+    padding: 0 1rem;
+  }
+
+  .message-rows,
+  .message-row {
+    align-self: stretch;
+  }
+
+  .message-row input {
+    width: auto;
+    flex: 1;
+    min-width: 0;
+  }
+}

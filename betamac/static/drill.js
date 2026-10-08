@@ -21,8 +21,15 @@ function resizeTextarea() {
 
 textarea.addEventListener("input", resizeTextarea);
 
-// Enter sends, Shift+Enter adds a newline.
+// Enter sends, Shift+Enter adds a newline. Soft keyboards have no Shift+Enter,
+// so on touchscreens Enter adds a newline and only the send button sends.
+const isTouch = matchMedia("(pointer: coarse)").matches;
+
+// Focusing on load would pop up a touchscreen's keyboard.
+if (!isTouch) textarea.focus();
+
 textarea.addEventListener("keydown", (event) => {
+  if (isTouch) return;
   if (event.key === "Enter" && !event.shiftKey && !event.isComposing) {
     event.preventDefault();
     form.requestSubmit();
@@ -32,11 +39,13 @@ textarea.addEventListener("keydown", (event) => {
 // the user's messages, in the order they were sent
 const sentMessages = [];
 
-// The server allows one grading per 5 seconds, so Submit stays disabled for
-// that long after the last one. The time is kept in localStorage because
-// Next scenario reloads the page.
+// The server allows one grading per 5 seconds, so Submit stays disabled (and
+// reads "Wait…", since touchscreens never show the tooltip) for that long
+// after the last one. The time is kept in localStorage because Next scenario
+// reloads the page.
 const COOLDOWN_MS = 5000;
 const WAIT_TOOLTIP = "Please wait before submitting again";
+const SUBMIT_LABEL = submitButton.textContent;
 let coolingDown = false;
 let cooldownTimer;
 
@@ -52,10 +61,12 @@ function startCooldown(ms) {
   coolingDown = true;
   submitButton.disabled = true;
   submitButton.title = WAIT_TOOLTIP;
+  submitButton.textContent = "Wait…";
   clearTimeout(cooldownTimer);
   cooldownTimer = setTimeout(() => {
     coolingDown = false;
     submitButton.title = "";
+    submitButton.textContent = SUBMIT_LABEL;
     submitButton.disabled = sentMessages.length === 0;
   }, ms);
 }
@@ -112,6 +123,8 @@ submitButton.addEventListener("click", async () => {
     results.textContent = "Grading failed (" + err.message + ")";
   }
   nextButton.hidden = false;
+  // on phones the chat pane shrinks to make room for the results
+  messages.scrollTop = messages.scrollHeight;
 });
 
 // GET / picks a new random scenario.
