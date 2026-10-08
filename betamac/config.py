@@ -26,6 +26,7 @@ class Config:
 
     # "user" must always be first in this tuple
     POSSIBLE_SENDERS = ("user", "contact")
+    SCENARIO_PROBLEM_STATEMENT_MAX_CHAR_LEN = 300
     MESSAGE_MAX_CHAR_LEN = 160
     SCENARIO_MAX_MESSAGES = 10
 

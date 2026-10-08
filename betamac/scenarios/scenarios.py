@@ -62,6 +62,16 @@ def submit():
         flash("Invalid scenario submission!")
         return "Invalid scenario submission!", 400
 
+    # check context does not exceed 300 characters
+    if (
+        len(problem_statement)
+        > current_app.config["SCENARIO_PROBLEM_STATEMENT_MAX_CHAR_LEN"]
+    ):
+        return (
+            f"Context exceeds {current_app.config['MESSAGE_MAX_CHAR_LEN']} character limit.",
+            400,
+        )
+
     # convert messages to preferred form
     # [{"sender": "user/contact", "text": "<message text"}]
     try:
