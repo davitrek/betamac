@@ -1,12 +1,9 @@
-import json
-import os
-from pathlib import Path
-
 from flask import Blueprint, current_app, flash, g, render_template, request
 
 from betamac.helpers import message_list_form_to_dict_form
 from betamac.limiter import global_key, limiter, outcome_is
 
+from .scenario_management import add_new_scenario_to_pool, save_scenario
 from .scenario_review import create_new_scenario, jev_review
 
 bp = Blueprint("scenarios", __name__)
@@ -18,23 +15,6 @@ def create_new():
         "new_scenario.html",
         max_messages=current_app.config["SCENARIO_MAX_MESSAGES"],
     )
-
-
-def save_scenario(new_scenario: dict):
-    # append to scenarios.json (loaded by create_app on next startup)
-    scenarios_path = (
-        Path(current_app.root_path).parent / "scenarios" / "scenarios.json"
-    )
-    with open(scenarios_path, encoding="utf-8") as f:
-        scenarios_data = json.load(f)
-    scenarios_data["scenarios"].append(new_scenario)
-    # write to a temp file then swap it in, so a failed write can't
-    # leave scenarios.json half-written
-    tmp_path = scenarios_path.with_suffix(".json.tmp")
-    with open(tmp_path, "w", encoding="utf-8") as f:
-        json.dump(scenarios_data, f, indent=2, ensure_ascii=False)
-        f.write("\n")
-    os.replace(tmp_path, scenarios_path)
 
 
 @bp.route("/submit-scenario", methods=["POST"])
@@ -123,7 +103,8 @@ def submit():
         return "Server error", 500
     g.outcome = "accepted"
 
-    save_scenario(new_scenario)
+    save_scenario(current_app.config["SCENARIOS_PATH"], new_scenario)
+    add_new_scenario_to_pool(new_scenario)
 
     flash("Scenario submitted!")
     return "", 204

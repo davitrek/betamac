@@ -120,7 +120,7 @@ def jev_grade(user_response: str, scenario: dict) -> dict[str, bool] | None:
         log_grading_error(record, "Jev provided no answers")
         return None
 
-    threshold = current_app.config["JEV_TRUE_THRESHOLD"]
+    threshold = current_app.config["JEV_GRADING_SUCCESS_THRESHOLD"]
 
     # {criterion: {"question", "noul", "threshold", "met"}}
     record["criteria"] = {}

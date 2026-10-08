@@ -19,11 +19,12 @@ class Config:
 
     SECRET_KEY = environ.get("SECRET_KEY")
 
-    JEV_TRUE_THRESHOLD = 0.8
+    JEV_GRADING_SUCCESS_THRESHOLD = 0.8
 
     REQUEST_DELAY_S = 0.1
     REQUEST_TIMEOUT_S = 5
 
+    # "user" must always be first in this tuple
     POSSIBLE_SENDERS = ("user", "contact")
     MESSAGE_MAX_CHAR_LEN = 160
     SCENARIO_MAX_MESSAGES = 10
@@ -46,6 +47,8 @@ class Config:
 
     ROOT_DIR = Path(__file__).parent.parent
     LOG_DIR = ROOT_DIR / "logs"
+    SCENARIOS_PATH = ROOT_DIR / "scenarios" / "scenarios.json"
+
     # each log rotates at LOG_MAX_BYTES and keeps LOG_BACKUP_COUNT old files
     # (<name>.jsonl.1 is the newest), so about 20MB per log at most
     LOG_MAX_BYTES = 5 * 1024 * 1024

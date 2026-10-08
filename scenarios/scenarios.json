@@ -385,6 +385,24 @@
         "mention the cheating as the reason",
         "ask the contact to stop reaching out"
       ]
+    },
+    {
+      "id": "decline-second-date-001",
+      "problem_statement": "A recent date has followed up, however you did not feel the connection and do not wish to see them again.",
+      "messages": [
+        {
+          "sender": "contact",
+          "text": "hiii, I rlly enjoyed our date yesterday 😊"
+        },
+        {
+          "sender": "contact",
+          "text": "I'd love to do smth again, u free next wknd? 👀"
+        }
+      ],
+      "criteria": [
+        "politely decline a second date",
+        "communicate lack of romantic connection to the contact"
+      ]
     }
   ]
 }

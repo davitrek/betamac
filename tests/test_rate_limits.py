@@ -102,7 +102,9 @@ def review(monkeypatch):
     monkeypatch.setattr(
         scenarios, "create_new_scenario", fake_create_new_scenario
     )
-    monkeypatch.setattr(scenarios, "save_scenario", r.saved.append)
+    monkeypatch.setattr(
+        scenarios, "save_scenario", lambda p, s: r.saved.append(s)
+    )
     return r
 
 

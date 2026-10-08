@@ -8,6 +8,7 @@ from werkzeug.middleware.proxy_fix import ProxyFix
 
 from .config import Config
 from .limiter import limiter, rate_limit_message
+from .scenarios.scenario_management import load_scenarios
 
 
 def configure_file_logger(
@@ -77,16 +78,7 @@ def create_app(test_config=None):
     ):
         print("Missing API key")
 
-    with open(
-        Path(__file__).resolve().parent.parent / "scenarios" / "scenarios.json"
-    ) as f:
-        app.config["SCENARIOS"] = {
-            s["id"]: s
-            for s in json.load(f)["scenarios"]
-            # ideally would check validity of keys here
-            # -> each scenario needs a "criteria", "messages", etc.
-            # ---> ensure these exist & spelling of keys is correct
-        }
+    app.config["SCENARIOS"] = load_scenarios(app.config["SCENARIOS_PATH"])
 
     with open(
         Path(__file__).resolve().parent / "scenarios" / "scenario_review.json"

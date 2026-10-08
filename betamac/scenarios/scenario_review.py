@@ -190,11 +190,9 @@ def create_new_scenario(
     if response is None:
         raise ValueError("Scene creator model request failed")
 
-    print(response["choices"][0]["message"]["content"])
-    # print(response["usage"]["cost"])
-
-    # assert cost of this was <USD$0.01
-    assert response["usage"]["cost"] < 0.01
+    # if cost of Deepseek call was > USD$0.10
+    if response["usage"]["cost"] > 0.10:
+        logger.warning(f"High Deepseek cost: {response['usage']['cost']}")
 
     # expected format of model_message
     # "id: <scenario id>",
