@@ -8,7 +8,7 @@ from werkzeug.middleware.proxy_fix import ProxyFix
 
 from .config import Config
 from .limiter import limiter, rate_limit_message
-from .scenarios.scenario_management import load_scenarios
+from .scenarios.scenario_management import is_scenarios_valid, load_scenarios
 
 
 def configure_file_logger(
@@ -79,6 +79,11 @@ def create_app(test_config=None):
         print("Missing API key")
 
     app.config["SCENARIOS"] = load_scenarios(app.config["SCENARIOS_PATH"])
+
+    if not is_scenarios_valid(
+        app.config["SCENARIOS"], app.config["POSSIBLE_SENDERS"]
+    ):
+        print("One or more scenarios are malformed!")
 
     with open(
         Path(__file__).resolve().parent / "scenarios" / "scenario_review.json"

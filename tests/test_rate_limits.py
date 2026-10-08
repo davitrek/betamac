@@ -96,7 +96,12 @@ def review(monkeypatch):
     def fake_create_new_scenario(problem_statement, messages):
         if r.deepseek_fails:
             raise ValueError("Deepseek failed")
-        return {"id": "new-001"}
+        return {
+            "id": "test-id-001",
+            "problem_statement": "",
+            "messages": [{"sender": "contact", "text": "hey"}],
+            "criteria": ["express sympathy"],
+        }
 
     monkeypatch.setattr(scenarios, "jev_review", fake_jev_review)
     monkeypatch.setattr(
@@ -180,7 +185,14 @@ def test_invalid_submissions_do_not_count(client, review):
                 post_scenario(client, data={"messages": []}).status_code == 400
             )
         assert post_scenario(client).status_code == 204
-        assert review.saved == [{"id": "new-001"}]
+        assert review.saved == [
+            {
+                "id": "test-id-001",
+                "problem_statement": "",
+                "messages": [{"sender": "contact", "text": "hey"}],
+                "criteria": ["express sympathy"],
+            }
+        ]
 
 
 def test_jev_errors_do_not_count(client, review):

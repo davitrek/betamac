@@ -3,7 +3,11 @@ from flask import Blueprint, current_app, flash, g, render_template, request
 from betamac.helpers import message_list_form_to_dict_form
 from betamac.limiter import global_key, limiter, outcome_is
 
-from .scenario_management import add_new_scenario_to_pool, save_scenario
+from .scenario_management import (
+    add_new_scenario_to_pool,
+    is_scenario_valid,
+    save_scenario,
+)
 from .scenario_review import create_new_scenario, jev_review
 
 bp = Blueprint("scenarios", __name__)
@@ -102,6 +106,12 @@ def submit():
     except ValueError:
         return "Server error", 500
     g.outcome = "accepted"
+
+    # reject if scenario is malformed
+    if not is_scenario_valid(
+        new_scenario, current_app.config["POSSIBLE_SENDERS"]
+    ):
+        return "Server error", 500
 
     save_scenario(current_app.config["SCENARIOS_PATH"], new_scenario)
     add_new_scenario_to_pool(new_scenario)
