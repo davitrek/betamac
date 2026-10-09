@@ -51,7 +51,7 @@ def create_app(test_config=None):
     # per-IP rate limits). Without a proxy the header is absent and nothing
     # changes. The header could be spoofed if the app were reachable directly,
     # which is accepted on a trusted local network.
-    app.wsgi_app = ProxyFix(app.wsgi_app, x_for=1)
+    app.wsgi_app = ProxyFix(app.wsgi_app, x_for=1, x_proto=1, x_host=1)
 
     limiter.init_app(app)
 

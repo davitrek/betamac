@@ -4,3 +4,4 @@ flask
 flask-limiter
 pytest
 freezegun
+gunicorn
