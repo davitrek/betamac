@@ -24,11 +24,11 @@ flask run                         # from the repo root; .flaskenv sets FLASK_APP
 
 - `betamac/__init__.py`: `create_app(test_config=None)` factory, which `flask run` finds through `FLASK_APP=betamac`. `test_config` is applied on top of `Config`. It wraps the app in `ProxyFix(x_for=1)`, calls `limiter.init_app(app)` and registers a 429 handler that returns `rate_limit_message()` as plain text (see "Rate limiting" below). Unless `TESTING` is set, it calls `configure_file_logger` for each JSONL log (see "Logging" below). Loads `scenarios/scenarios.json` into `app.config["SCENARIOS"]` (a dict keyed by scenario `id`) and `betamac/scenarios/scenario_review.json` into `app.config["SCENARIO_REVIEW"]`, then registers the `drill` and `scenarios` blueprints.
 - `betamac/app.py`: empty leftover from the old `app/` layout.
-- `betamac/config.py`: `Config` holds the API keys, `SECRET_KEY`, `JEV_API_URL` / `JEV_MODEL` (OpenRouter's alpha Decisions API, model `typesafe/jev-1.13`; see "Jev" below), `JEV_TRUE_THRESHOLD` (0.8, the probability cutoff for counting a `noul` as true), `SCENE_CREATOR_API_URL` / `SCENE_CREATOR_MODEL` (a chat-completions LLM used to write criteria for submitted scenarios), `REQUEST_DELAY_S`, `REQUEST_TIMEOUT_S`, the submission limits `POSSIBLE_SENDERS`, `MESSAGE_MAX_CHAR_LEN` and `SCENARIO_MAX_MESSAGES`, `ROOT_DIR` (the repo root) / `LOG_DIR` (`<repo>/logs`), and `LOG_MAX_BYTES` (5 MB) / `LOG_BACKUP_COUNT` (3) for log rotation, and the Flask-Limiter settings (`RATELIMIT_*`) and limit strings (`GRADING_LIMIT`, `SUBMISSION_*_LIMIT`).
+- `betamac/config.py`: `Config` holds the API keys, `SECRET_KEY`, `JEV_API_URL` / `JEV_MODEL` (OpenRouter's alpha Decisions API, model `typesafe/jev-1.13`; see "Jev" below), `JEV_GRADING_SUCCESS_THRESHOLD` (0.8, the probability cutoff for counting a grading criterion as met), `SCENE_CREATOR_API_URL` / `SCENE_CREATOR_MODEL` (a chat-completions LLM used to write criteria for submitted scenarios), `REQUEST_DELAY_S`, `REQUEST_TIMEOUT_S`, the submission limits `POSSIBLE_SENDERS`, `MESSAGE_MAX_CHAR_LEN` and `SCENARIO_MAX_MESSAGES`, `ROOT_DIR` (the repo root) / `LOG_DIR` (`<repo>/logs`), and `LOG_MAX_BYTES` (5 MB) / `LOG_BACKUP_COUNT` (3) for log rotation, and the Flask-Limiter settings (`RATELIMIT_*`) and limit strings (`GRADING_LIMIT`, `SUBMISSION_*_LIMIT`).
 - `betamac/drill.py`: blueprint `drill`.
   - `GET /` (endpoint `drill.drill`) picks a random scenario the user hasn't completed yet. It tracks completed ids in `session["seen_scenarios"]` and resets the list once every scenario has been seen. `drill.html` shows the phone and, 2rem to its right, a `.side` column as tall as the phone. The two are centred together as a pair. At its top is a "Context" box showing `problem_statement`, which is omitted when that's `""`. Below it is `.results`, and under that the Submit button (`.submit-reply`), which sits where Next scenario later appears.
   - `POST /grade` (endpoint `drill.grade`, limited to `GRADING_LIMIT` per IP, counting only 200 responses) takes JSON `{"scenario_id": ..., "messages": [text, ...]}`, joins the messages with newlines and grades them with `grading.grade_text_message`, adds the scenario to `seen_scenarios`, and returns only the `grade_results.html` fragment. It returns 400 for bad input (including an empty list or a blank message) and 500 if grading returns `None`.
-- `betamac/grading.py`: `grade_text_message` (stubbed, see below) calls `jev_grade`, which turns each criterion into a `noul` (yes/no probability) question named `q0`, `q1`, …, sends them through `integrations.jev.fetch_answers` and returns `dict[criterion, bool]`, or `None` if Jev fails or an answer is missing. Answers are looked up by key (`q{i}`). Every `jev_grade` call logs one record to the `betamac.grading` logger.
+- `betamac/grading.py`: `grade_text_message` calls `jev_grade`, which turns each criterion into a `noul` (yes/no probability) question named `q0`, `q1`, …, sends them through `integrations.jev.fetch_answers` and returns `dict[criterion, bool]`, or `None` if Jev fails or an answer is missing. Answers are looked up by key (`q{i}`). Every `jev_grade` call logs one record to the `betamac.grading` logger.
 - `betamac/limiter.py`: the shared Flask-Limiter instance (keyed by client IP), `global_key` for limits shared by every client, `outcome_is(outcome)` for `deduct_when`, and `rate_limit_message()` for the 429 text.
 - `betamac/helpers.py`: formats scenarios (problem statement, messages, criteria) as strings for prompts and Jev `state`.
 - `betamac/integrations/jev.py`: `fetch_answers(state, questions)` POSTs to the Decisions API and returns the parsed JSON, or `None` on any non-429 error or when retries run out. A 429 delays the next request by `retry-after` (falling back to `2**attempt` seconds when the header is missing) and retries.
@@ -53,7 +53,7 @@ flask run                         # from the repo root; .flaskenv sets FLASK_APP
 
 - **`betamac/` is a package.** Modules import each other relatively (`from .config import Config`, `from . import grading`). Run things from the repo root as a module, never by file path.
 - The blueprints are imported inside `create_app()`, after config is set up. Keep them there.
-- **Grading is currently stubbed.** `grade_text_message` returns `testing_sentinel_answers(...)` straight away, so `jev_grade` doesn't run and nothing is written to `grading.jsonl`. Remove that early return to grade for real.
+- Grading is live. `grade_text_message` has a commented-out `return testing_sentinel_answers(...)`; uncommenting it stubs grading (no Jev calls, nothing written to `grading.jsonl`).
 - User-written text (drill replies and submitted scenarios) is inserted straight into the Jev `state` string, with no escaping or structure separating it from our own framing text.
 - In `style.css`, don't give `.pill` a `display` value. It would override the `hidden` attribute on the Submit and Next scenario buttons.
 - `__pycache__` is gitignored. Stale `.pyc` files from deleted modules may still be on disk, but they're harmless.
@@ -123,7 +123,7 @@ How to write questions:
 
 Thresholds and calibration:
 - Probabilities are calibrated in aggregate, not per call, and they wobble slightly between identical calls. Treat a value near 0.5 as a third outcome ("unsure"), not as a weak yes or no.
-- TypeSafe advises picking thresholds from the cost of each kind of mistake and from labelled data, not from a round number. Different questions can and should have different thresholds and directions. The current `JEV_TRUE_THRESHOLD = 0.8` is shared by everything.
+- TypeSafe advises picking thresholds from the cost of each kind of mistake and from labelled data, not from a round number. Different questions can and should have different thresholds and directions. Grading uses one shared `JEV_GRADING_SUCCESS_THRESHOLD` (0.8). Each moderation question in `scenario_review.json` has its own `threshold` and `reject_if`, tuned with `scripts/review_eval.py`.
 - The model is pinned to `typesafe/jev-1.13` so that tuned thresholds stay valid. `~typesafe/jev-latest` exists but drifts.
 
 Limits and cost: a 32k-token context window, and text input only. Billing is by input tokens only (about $0.042/M), and output is free. The latency is about 0.5s. Errors use the standard OpenRouter codes (400, 401, 402 out of credits, 413 too large, 429 rate limited, 5xx/524/529 upstream). `jev.fetch_answers` retries only on 429, and returns `None` on other errors.
@@ -145,3 +145,17 @@ Docs: https://openrouter.ai/docs/guides/community/jev-tutorial , https://openrou
 - `sender == "user"` renders as the player's (sent) bubble, and anything else renders as received.
 - Criteria are short verb phrases. They get spliced into prompts as "Does the user <criterion> in their final response?" and "User does <criterion>", so write them to read naturally in that form.
 - Scenarios are loaded once at startup, and keys aren't validated. Restart the server (or rely on debug reload) after editing them.
+
+## Agent skills
+
+### Issue tracker
+
+Issues are tracked in GitHub Issues for davitrek/betamac (via the `gh` CLI). See `docs/agents/issue-tracker.md`.
+
+### Triage labels
+
+The default five labels: needs-triage, needs-info, ready-for-agent, ready-for-human, wontfix. See `docs/agents/triage-labels.md`.
+
+### Domain docs
+
+Single-context: one root `GLOSSARY.md` plus `docs/adr/`, created lazily when needed. See `docs/agents/domain.md`.
