@@ -1,6 +1,6 @@
 # betamac
 
-Practise replying to tricky text messages. In a realistic chat, you type your reply and an AI marks it against what a good reply should do.
+A webapp for practising replying to tricky text messages. In a realistic chat, you type your reply and an AI marks it against what a good reply should do.
 
 **Live at [betamac.app](https://betamac.app/)**. There's a growing set of scenarios, and anyone can submit their own, moderated automatically by AI.
 
